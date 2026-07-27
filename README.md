@@ -1,383 +1,179 @@
-# 🚗 Car Assembly Dataset Generator & ML Classification Guide
-
-A complete Python solution for generating synthetic car assembly images with damage labels and implementing machine learning image classification.
-
-## 📦 What You Get
-
-### Files Included:
-
-1. **`car_assembly_dataset_generator.py`** - Main generator script
-   - Generates 30 realistic car assembly images with 3 angles each
-   - Applies damage effects (highly_damaged, medium_damaged, low_damaged)
-   - Organizes dataset in ML-ready structure
-   - Creates metadata, CSV annotations, and documentation
-
-2. **`SETUP_AND_TRAINING_GUIDE.md`** - Comprehensive training guide
-   - Image resolution recommendations
-   - Model architecture comparisons
-   - Complete training code examples
-   - Hyperparameter tuning guide
-   - Expected performance metrics
-
-3. **`car_assembly_examples.py`** - Ready-to-use code examples
-   - Dataset loading (PyTorch, Pandas)
-   - Visualization utilities
-   - Classifier training script
-   - Inference/prediction functions
-   - Evaluation and analysis tools
-
-4. **`requirements.txt`** - All dependencies
-
-5. **`README.md`** - This file
-
+---
+title: Car Part Defect Classifier
+description: Generate a synthetic car-part image dataset with Azure OpenAI gpt-image and train a three-class defect classifier.
 ---
 
-## 🚀 Quick Start (5 minutes)
+## Overview
 
-### Step 1: Install Dependencies
-```bash
+This project does two things:
+
+1. **Generates** a synthetic dataset of car-part photos using the Azure OpenAI gpt-image API.
+2. **Trains** an image classifier that labels each part as `no_defect`, `minor_defect`, or `major_defect`.
+
+The current best model is an EfficientNet-B0 that reaches about 84% accuracy on the held-out test set. It is essentially perfect on `major_defect` and mainly errs on the cautious side by flagging some clean parts as `minor_defect`.
+
+## Repository layout
+
+| Path | Purpose |
+|------|---------|
+| `car_assembly_dataset_generator.py` | Generates the synthetic dataset using Azure OpenAI gpt-image. |
+| `train_classifier.py` | Trains and evaluates the classifier. |
+| `model/model.pt` + `model/labels.json` | The trained model and its class labels. |
+| `SETUP_AND_TRAINING_GUIDE.md` | Detailed setup, training, and deployment guide. |
+| `azureml/submit_training_job.py` | Submits a training job to Azure Machine Learning. |
+| `azureml/deploy_batch_endpoint.py` | Deploys a batch scoring endpoint (recommended for teams). |
+| `azureml/deploy_local_endpoint.py` | Runs a local Docker endpoint for offline single-image scoring. |
+| `requirements.txt` | Python dependencies. |
+| `car_parts_dataset/` | The generated dataset (images, splits, annotations, metadata). |
+
+## Quick start
+
+### 1. Install dependencies
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### Step 2: Generate Dataset
-```bash
+### 2. Generate the dataset (optional)
+
+The repository already ships a trained model, so this step is only needed to regenerate or extend the dataset.
+
+Set your Azure OpenAI credentials as environment variables, then run the generator:
+
+```powershell
+$env:AZURE_OPENAI_API_KEY = "<your-key>"
+$env:AZURE_OPENAI_IMAGE_ENDPOINT = "<your-endpoint>"
 python car_assembly_dataset_generator.py
 ```
 
-Output:
+The generator is resume-aware: re-running it fills only missing images and rebuilds the annotation CSV files.
+
+### 3. Train the classifier
+
+```powershell
+python train_classifier.py --backbone efficientnet_b0 --epochs 50 --img-size 256
 ```
-car_assembly_dataset/
-├── train/                    (24 images, 80%)
-├── val/                      (3 images, 10%)
-├── test/                     (3 images, 10%)
+
+See [SETUP_AND_TRAINING_GUIDE.md](SETUP_AND_TRAINING_GUIDE.md) for full training and deployment details.
+
+## Dataset
+
+The generator photographs individual car parts on an assembly line across three quality tiers. Every part is structurally intact; only the surface quality differs.
+
+| Property | Value |
+|----------|-------|
+| Quality classes | `no_defect`, `minor_defect`, `major_defect` |
+| Part categories | door, hood, bumper, fender, windshield, wheel, side_mirror, trunk, headlight, whole_car, whole_car_no_mechanical, roof_top_inside, roof_top_outside |
+| Image size | 256 x 256 pixels |
+| Target per part per class | 20 images |
+| Total images | ~714 |
+| Split | roughly 80% train / 10% val / 10% test |
+| Format | JPEG |
+
+Exact counts live in `car_parts_dataset/metadata.json`.
+
+### Dataset structure
+
+```text
+car_parts_dataset/
+├── train/
+│   ├── no_defect/
+│   ├── minor_defect/
+│   └── major_defect/
+├── val/
+├── test/
 ├── annotations/
 │   ├── train.csv
 │   ├── val.csv
-│   ├── test.csv
-│   └── metadata.json
-└── README.md
+│   └── test.csv
+└── metadata.json
 ```
 
-### Step 3: Explore & Train
-See **SETUP_AND_TRAINING_GUIDE.md** for detailed training instructions.
+Each annotation CSV has the columns: `image_path`, `filename`, `part`, `quality`, `index`, `split`, `image_size`.
 
----
+## Model and training
 
-## 🎯 Key Features
+The classifier uses transfer learning on an ImageNet-pretrained backbone.
 
-### ✅ Dataset Generation
-- **30 realistic images** with 3 angles per unique car (10 unique cars)
-- **512×512 resolution** (recommended for damage detection)
-- **3 damage levels** with visual effects:
-  - Highly Damaged (severe dents, scratches)
-  - Medium Damaged (moderate dents)
-  - Low Damaged (minimal damage)
-- **Automatic organization** in ML-ready structure
-- **Fallback support** - Works with or without DALL-E API
+| Setting | Value |
+|---------|-------|
+| Backbone | EfficientNet-B0 (pretrained) |
+| Input resolution | 256 x 256 |
+| Strategy | Freeze backbone, fine-tune the last 2 feature blocks |
+| Head learning rate | 1e-3 |
+| Backbone learning rate | 1e-4 |
+| Loss | Cross-entropy with class weights and label smoothing (0.1) |
+| Schedule | Cosine with linear warmup |
+| Test-time augmentation | Horizontal-flip averaging |
 
-### 📊 ML-Ready Structure
-```
-Dataset (30 images)
-├── Training (24): 80% split
-├── Validation (3): 10% split
-├── Test (3): 10% split
-├── Perfectly balanced (1:1:1 damage ratio)
-└── Metadata included (angles, labels, splits)
-```
+### Expected performance
 
-### 🤖 ML Training Support
-- **Transfer Learning** approach for small datasets
-- **Best model**: ResNet50 (90-95% accuracy expected)
-- **Alternatives**: EfficientNetB2, Vision Transformer
-- **Complete training code** included
-- **Data augmentation** strategies for small datasets
-- **Evaluation metrics** (confusion matrix, classification report)
+| Class | Behavior |
+|-------|----------|
+| `major_defect` | Near-perfect; rarely confused with other classes. |
+| `minor_defect` | Good; occasionally read as `no_defect`. |
+| `no_defect` | Weakest; sometimes flagged as `minor_defect`. |
 
----
+Overall test accuracy is about 84%. The remaining errors sit almost entirely on the boundary between `minor_defect` and `no_defect`, which is expected because subtle defects are visually close to clean parts.
 
-## 💡 Recommendations Summary
+## Deployment
 
-### Image Resolution
-| Resolution | Use Case | Speed | Accuracy |
-|------------|----------|-------|----------|
-| **512×512** | ✅ **RECOMMENDED** | Moderate | Excellent |
-| 384×384 | Good balance | Fast | Good |
-| 256×256 | Quick test | Very fast | Fair |
+Two quota-free options are available.
 
-### Model Selection
-1. **ResNet50** ⭐ (Recommended)
-   - 90-95% accuracy
-   - Fast training (2-3 sec/epoch)
-   - Well-documented
+| Option | When to use |
+|--------|-------------|
+| Batch endpoint (`azureml/deploy_batch_endpoint.py`) | Recommended for teams. Scores a whole folder of images in the shared Azure workspace with no local setup. |
+| Local Docker endpoint (`azureml/deploy_local_endpoint.py`) | Offline, single-image predictions on your own machine. Requires Docker Desktop. |
 
-2. **EfficientNetB2** ⭐ (Best)
-   - 91-96% accuracy
-   - Balanced efficiency
-   - Good for small datasets
-
-3. **Vision Transformer**
-   - 92-96% accuracy
-   - Modern approach
-   - More parameters
-
-### Training Strategy
-```
-Phase 1: Freeze backbone, train head (1-2 epochs)
-         ↓
-Phase 2: Unfreeze last block, fine-tune (3-5 epochs)
-         ↓
-Phase 3: Full fine-tuning with low LR (5-10 epochs)
-```
-
----
-
-## 📚 Usage Examples
-
-### Load Dataset (PyTorch)
-```python
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
-
-transform = transforms.Compose([
-    transforms.Resize((512, 512)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                        std=[0.229, 0.224, 0.225])
-])
-
-train_dataset = datasets.ImageFolder("car_assembly_dataset/train", 
-                                     transform=transform)
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-```
-
-### Load Dataset (Pandas)
-```python
-import pandas as pd
-
-train_df = pd.read_csv("car_assembly_dataset/annotations/train.csv")
-val_df = pd.read_csv("car_assembly_dataset/annotations/val.csv")
-test_df = pd.read_csv("car_assembly_dataset/annotations/test.csv")
-```
-
-### Quick Training
-```python
-# See car_assembly_examples.py for complete training code
-from car_assembly_examples import train_classifier
-
-model = train_classifier()  # Train with 30 images
-```
-
-### Inference
-```python
-from car_assembly_examples import predict_damage_level
-
-result = predict_damage_level("path/to/image.jpg")
-print(f"Damage Level: {result['predicted_class']}")
-print(f"Confidence: {result['confidence']:.2%}")
-```
-
----
-
-## 📖 Documentation
-
-### For Dataset Generation:
-- See `car_assembly_dataset_generator.py` for full code comments
-- Generated dataset includes `README.md` with details
-
-### For ML Training:
-- **SETUP_AND_TRAINING_GUIDE.md** - All training details
-  - Image resolution analysis
-  - Model architecture comparisons
-  - Complete training code
-  - Hyperparameter tuning
-  - Expected performance
-  - Common pitfalls
-
-### For Code Examples:
-- **car_assembly_examples.py** - Runnable examples
-  - Dataset loading
-  - Visualization
-  - Training
-  - Inference
-  - Evaluation
-
----
-
-## 🔧 Configuration
-
-All configurable parameters in `car_assembly_dataset_generator.py`:
+### Score a folder with the batch endpoint
 
 ```python
-CONFIG = {
-    "output_dir": "car_assembly_dataset",
-    "image_size": (512, 512),           # Width, Height
-    "num_unique_cars": 10,              # Unique car designs
-    "angles": ["front", "side", "rear"], # Viewing angles
-    "damage_levels": ["highly_damaged", "medium_damaged", "low_damaged"],
-    "images_per_damage": 10,            # Total = 10 * 3 = 30
-    "train_split": 0.8,                 # 80% train
-    "val_split": 0.1,                   # 10% val
-    "test_split": 0.1,                  # 10% test
-    "seed": 42,                         # Reproducibility
-}
+from azure.ai.ml import MLClient, Input
+from azure.identity import DefaultAzureCredential
+from azure.ai.ml.constants import AssetTypes
+
+ml = MLClient(DefaultAzureCredential(), "<sub-id>", "<resource-group>", "<workspace>")
+job = ml.batch_endpoints.invoke(
+    endpoint_name="carparts-batch",
+    input=Input(type=AssetTypes.URI_FOLDER, path="folder_of_images"),
+)
+print(job.name)
 ```
 
-### API Configuration (Optional)
+The job produces a `predictions.csv` with the predicted class and per-class probabilities for every image.
 
-For using DALL-E 3 API instead of local generation:
+## API configuration
+
+Image generation uses the Azure OpenAI gpt-image API. Configure it through environment variables rather than hardcoding secrets:
 
 ```python
 API_CONFIG = {
-    "provider": "dalle",           # "dalle" or "stable_diffusion"
-    "api_key": "YOUR_API_KEY",     # Get from OpenAI platform
-    "model": "dall-e-3",           # Model name
+    "provider": "azure_gpt_image",  # "azure_gpt_image" or "local_simulation"
+    "endpoint": os.environ.get("AZURE_OPENAI_IMAGE_ENDPOINT", ""),
+    "api_key": os.environ.get("AZURE_OPENAI_API_KEY", ""),
+    "model": "gpt-image-2",         # Azure OpenAI deployment name
 }
 ```
 
-**Note:** Local simulation works perfectly without any API key!
+## System requirements
 
----
+| Tier | Requirements |
+|------|--------------|
+| Minimum | Python 3.8+, 4 GB RAM, ~1 GB disk. |
+| Recommended for training | Python 3.10+, 8+ GB RAM, an NVIDIA/CUDA GPU, ~2 GB disk. |
 
-## 📊 Expected Performance
+## Common pitfalls
 
-With proper transfer learning on 30-image dataset:
+- Do not commit API keys. Provide them through environment variables only.
+- Use pretrained backbones; training from scratch on this dataset size will not converge well.
+- Keep preprocessing identical across train, validation, and test.
+- Watch validation loss and keep the best checkpoint rather than the final epoch.
 
-| Stage | Accuracy | Notes |
-|-------|----------|-------|
-| No fine-tuning | 85-90% | Pre-trained backbone only |
-| Head training | 88-92% | Train last layer only |
-| Partial fine-tuning | 91-94% | Unfreeze last blocks |
-| Full fine-tuning | 92-96% | Complete model tuning |
+## Resources
 
-**Note:** Small test set (3 images) may have ±5% variance.
-
----
-
-## ⚙️ System Requirements
-
-### Minimum:
-- Python 3.8+
-- 4 GB RAM
-- 500 MB disk space (for dataset)
-
-### Recommended for Training:
-- Python 3.10+
-- 8+ GB RAM
-- GPU (NVIDIA/CUDA) for faster training
-- 2+ GB disk space (including model checkpoints)
-
----
-
-## 🐛 Troubleshooting
-
-### "ModuleNotFoundError" when running script
-```bash
-pip install -r requirements.txt
-```
-
-### Training is slow
-- Use GPU: `device = 'cuda'` instead of 'cpu'
-- Reduce image size temporarily for testing
-- Lower batch size if out of memory
-
-### Poor model accuracy
-- Ensure data augmentation is enabled
-- Check that you're using transfer learning
-- Verify dataset splits are correct
-- Try different model architectures
-
-### Dataset generation fails
-- Ensure write permissions in output directory
-- Check available disk space
-- Try local simulation if API fails
-
----
-
-## 📝 File Structure
-
-```
-.
-├── car_assembly_dataset_generator.py    # Main generator
-├── car_assembly_examples.py             # Example usage
-├── SETUP_AND_TRAINING_GUIDE.md         # Detailed guide
-├── requirements.txt                     # Dependencies
-├── README.md                            # This file
-└── car_assembly_dataset/                # Generated dataset
-    ├── train/
-    ├── val/
-    ├── test/
-    ├── annotations/
-    ├── metadata.json
-    └── README.md
-```
-
----
-
-## 🚀 Next Steps
-
-1. **Generate Dataset**
-   ```bash
-   python car_assembly_dataset_generator.py
-   ```
-
-2. **Review Generated Data**
-   ```bash
-   # Check folder structure
-   ls -la car_assembly_dataset/
-   # View metadata
-   cat car_assembly_dataset/metadata.json
-   ```
-
-3. **Train Classifier**
-   - Follow code in `SETUP_AND_TRAINING_GUIDE.md`
-   - Or run examples from `car_assembly_examples.py`
-
-4. **Evaluate & Optimize**
-   - Test on test set
-   - Analyze by angle/damage level
-   - Fine-tune hyperparameters
-
-5. **Deploy**
-   - Use inference code for predictions
-   - Integrate into production pipeline
-
----
-
-## 📚 Resources
-
-### Official Documentation
 - [PyTorch](https://pytorch.org/docs/)
 - [Torchvision](https://pytorch.org/vision/stable/index.html)
-- [Scikit-learn](https://scikit-learn.org/stable/)
-
-### Recommended Reading
-- Transfer Learning: https://cs231n.github.io/transfer-learning/
-- Data Augmentation: https://github.com/albumentations-team/albumentations
-- Vision Transformers: https://github.com/rwightman/pytorch-image-models
-
----
-
-## 📄 License
-
-This project is provided as-is for educational and commercial use.
-
----
-
-## ❓ Questions?
-
-Refer to:
-1. **SETUP_AND_TRAINING_GUIDE.md** - For ML questions
-2. **car_assembly_examples.py** - For implementation examples
-3. Code comments in generator script - For dataset generation
-
----
-
-## 🎉 Happy Training!
-
-You now have everything needed to:
-- ✅ Generate 30 realistic car assembly images
-- ✅ Organize them for ML classification
-- ✅ Train a damage detection model
-- ✅ Evaluate and deploy your classifier
-
-Good luck with your car damage assessment system! 🚗💨
+- [Transfer learning](https://cs231n.github.io/transfer-learning/)
+- [Azure Machine Learning](https://learn.microsoft.com/azure/machine-learning/)

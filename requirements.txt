@@ -15,9 +15,9 @@ torchaudio>=2.0.0       # Audio processing (optional)
 # Scikit-learn (for evaluation metrics)
 scikit-learn>=1.0.0     # ML utilities
 
-# API integration (optional, only if using DALL-E)
+# API integration (optional, only if using the Azure OpenAI gpt-image API)
 requests>=2.28.0        # HTTP requests
-openai>=0.27.0          # OpenAI API (if using DALL-E)
+openai>=0.27.0          # Azure OpenAI API (if using gpt-image)
 
 # Additional utilities
 matplotlib>=3.5.0       # Visualization
