@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets / local env
+.env
+*.key
+
+# Azure ML job logs & scratch outputs (regenerable) — anything starting with underscore
+_*
+
+# Batch scoring downloads
+predictions.csv
+
+# Agent tracking (local only)
+.copilot-tracking/
+
+# Generated dataset (large / regenerable via the generator script)
+car_parts_dataset/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,15 @@
+# Inference environment for the car-part defect classifier online endpoint.
+# The azureml-inference-server-http package is REQUIRED for custom environments.
+name: pytorch-inference
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - torch==2.2.*
+      - torchvision==0.17.*
+      - pillow
+      - numpy<2
+      - pandas
+      - azureml-inference-server-http

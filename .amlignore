@@ -1,0 +1,18 @@
+# Exclude large/unneeded paths from the Azure ML code snapshot.
+# The job only needs train_classifier.py; the dataset comes from the
+# registered data asset, not the code upload.
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+.git/
+.github/
+car_parts_dataset/
+azureml/model/
+outputs/
+*.pt
+*.onnx
+.vscode/
+.copilot-tracking/
+_joblogs/

@@ -1,0 +1,13 @@
+# Training environment for the car-part defect classifier command job.
+name: pytorch-train
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - numpy<2
+      - torch==2.2.*
+      - torchvision==0.17.*
+      - scikit-learn
+      - pillow
