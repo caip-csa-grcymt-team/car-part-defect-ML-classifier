@@ -147,8 +147,6 @@ print(job.name)
 The job produces a `predictions.csv` with the predicted class and per-class probabilities for every image.
 
 ## Common pitfalls
-
-- Do not commit API keys. Provide them through environment variables only.
 - Use pretrained backbones; training from scratch on this dataset size will not converge well.
 - Keep preprocessing identical across train, validation, and test.
 - Watch validation loss and keep the best checkpoint rather than the final epoch.
