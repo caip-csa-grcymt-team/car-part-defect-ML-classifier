@@ -1,7 +1,6 @@
-"""
-Car Assembly Dataset - Setup and Usage Guide
-"""
-# QUICK START GUIDE
+
+
+# Car Assembly Dataset - Quick Start and Usage Guide
 
 
 ## Step 1: Install Requirements
