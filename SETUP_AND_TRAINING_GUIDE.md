@@ -154,5 +154,5 @@ The job produces a `predictions.csv` with the predicted class and per-class prob
 
 1. Regenerate or extend the dataset if you need more coverage.
 2. Retrain and compare against the current ~84% baseline.
-3. Deploy the batch endpoint and share it with your team.
+3. Deploy the batch endpoint.
 4. Score new images and review the per-class results.
