@@ -4,7 +4,7 @@
 
 ## Overview
 
-This project does two things:
+This project:
 
 1. **Generates** a synthetic dataset of car-part photos using the Azure OpenAI gpt-image API.
 2. **Trains** an image classifier that labels each part as `no_defect`, `minor_defect`, or `major_defect`.
