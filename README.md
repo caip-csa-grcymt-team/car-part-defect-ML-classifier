@@ -20,7 +20,7 @@ The current best model is an EfficientNet-B0 that reaches about 84% accuracy on 
 | `model/model.pt` + `model/labels.json` | The trained model and its class labels. |
 | `SETUP_AND_TRAINING_GUIDE.md` | Detailed setup, training, and deployment guide. |
 | `azureml/submit_training_job.py` | Submits a training job to Azure Machine Learning. |
-| `azureml/deploy_batch_endpoint.py` | Deploys a batch scoring endpoint (recommended for teams). |
+| `azureml/deploy_batch_endpoint.py` | Deploys a batch scoring endpoint |
 | `azureml/deploy_local_endpoint.py` | Runs a local Docker endpoint for offline single-image scoring. |
 | `requirements.txt` | Python dependencies. |
 | `car_parts_dataset/` | The generated dataset (images, splits, annotations, metadata). |
