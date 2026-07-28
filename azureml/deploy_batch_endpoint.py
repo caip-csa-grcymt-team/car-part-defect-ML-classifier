@@ -4,8 +4,9 @@
 """Deploy the car-part defect classifier to an Azure ML BATCH endpoint.
 
 Batch endpoints score a whole folder of images on an existing compute cluster
-that scales to zero when idle -- so they need NO online-endpoint quota. This is
-the deployment path to use when managed online-endpoint CPU quota is unavailable.
+that scales to zero when idle -- so they need NO dedicated online-endpoint
+capacity. This is the deployment path to use when managed online-endpoint CPU
+capacity is unavailable.
 
 End-to-end SDK v2 flow:
     1. Connect to the workspace

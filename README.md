@@ -1,5 +1,5 @@
 ---
-title: Car Part Defect Classifier
+title: Car Assembly Defect Classifier
 description: Generate a synthetic car-part image dataset with Azure OpenAI gpt-image and train a three-class defect classifier.
 ---
 
