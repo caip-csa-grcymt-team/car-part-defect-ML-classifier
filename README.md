@@ -17,7 +17,7 @@ The current best model is an EfficientNet-B0 that reaches about 84% accuracy on 
 |------|---------|
 | `car_assembly_dataset_generator.py` | Generates the synthetic dataset using Azure OpenAI gpt-image. |
 | `train_classifier.py` | Trains and evaluates the classifier. |
-| `model/model.pt` + `model/labels.json` | The trained model and its class labels. |
+| `azureml/model/model.pt` + `azureml/model/labels.json` | The trained model and its class labels. |
 | `SETUP_AND_TRAINING_GUIDE.md` | Detailed setup, training, and deployment guide. |
 | `azureml/submit_training_job.py` | Submits a training job to Azure Machine Learning. |
 | `azureml/deploy_batch_endpoint.py` | Deploys a batch scoring endpoint |
@@ -146,7 +146,14 @@ The job produces a `predictions.csv` with the predicted class and per-class prob
 
 ### Get predictions from the local endpoint
 
-After deploying the local endpoint with `azureml/deploy_local_endpoint.py`, score a whole folder (for example the test split) and compare predictions against the known labels:
+The repository ships the trained model at `azureml/model/`, which is the default the deploy script uses. Start the local Docker container:
+
+```powershell
+python azureml/deploy_local_endpoint.py `
+    --subscription-id <sub-id> --resource-group <resource-group> --workspace <workspace>
+```
+
+Then score a whole folder (for example the test split) and compare predictions against the known labels:
 
 ```powershell
 python azureml/score_test_folder.py `

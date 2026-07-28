@@ -16,10 +16,11 @@ The current best model reaches about 84% accuracy on the held-out test set.
 |------|---------|
 | `car_assembly_dataset_generator.py` | Generates the synthetic dataset using Azure OpenAI gpt-image. |
 | `train_classifier.py` | Trains and evaluates the classifier. |
-| `model/model.pt` + `model/labels.json` | The trained model and its class labels. |
+| `azureml/model/model.pt` + `azureml/model/labels.json` | The trained model and its class labels. |
 | `azureml/submit_training_job.py` | Submits a training job to Azure Machine Learning. |
 | `azureml/deploy_batch_endpoint.py` | Deploys a batch scoring endpoint (recommended for teams). |
 | `azureml/deploy_local_endpoint.py` | Runs a local Docker endpoint for offline single-image scoring. |
+| `azureml/score_test_folder.py` | Scores a folder of images against the local endpoint and reports predicted vs. actual. |
 | `requirements.txt` | Python dependencies. |
 
 ## Quick start
@@ -144,6 +145,23 @@ print(job.name)
 ```
 
 The job produces a `predictions.csv` with the predicted class and per-class probabilities for every image.
+
+### Score a folder with the local endpoint
+
+The repository ships the trained model at `azureml/model/`, which is the default the deploy script uses, so no model path is needed. Requires Docker Desktop running and `az login`.
+
+```powershell
+# 1. build and start the local Docker container
+python azureml/deploy_local_endpoint.py `
+    --subscription-id <sub-id> --resource-group <resource-group> --workspace <workspace>
+
+# 2. score a folder and compare against the known labels
+python azureml/score_test_folder.py `
+    --subscription-id <sub-id> --resource-group <resource-group> --workspace <workspace> `
+    --images-dir car_parts_dataset/test
+```
+
+The subfolder name (`major_defect`, `minor_defect`, `no_defect`) is used as the ground-truth label, so the script prints predicted vs. actual per image, writes `test_predictions.csv`, and reports overall accuracy. Point `--images-dir` at any folder of new, unlabelled images to get defect-type predictions for them instead.
 
 ## Common pitfalls
 - Use pretrained backbones; training from scratch on this dataset size will not converge well.
