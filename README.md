@@ -9,7 +9,7 @@ This project does two things:
 1. **Generates** a synthetic dataset of car-part photos using the Azure OpenAI gpt-image API.
 2. **Trains** an image classifier that labels each part as `no_defect`, `minor_defect`, or `major_defect`.
 
-The current best model is an EfficientNet-B0 that reaches about 84% accuracy on the held-out test set. It is essentially perfect on `major_defect` and mainly errs on the cautious side by flagging some clean parts as `minor_defect`.
+The current best model is an EfficientNet-B0 that reaches about 84% accuracy on the held-out test set. 
 
 ## Repository layout
 
