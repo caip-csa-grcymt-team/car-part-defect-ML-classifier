@@ -22,6 +22,7 @@ The current best model is an EfficientNet-B0 that reaches about 84% accuracy on 
 | `azureml/submit_training_job.py` | Submits a training job to Azure Machine Learning. |
 | `azureml/deploy_batch_endpoint.py` | Deploys a batch scoring endpoint |
 | `azureml/deploy_local_endpoint.py` | Runs a local Docker endpoint for offline single-image scoring. |
+| `azureml/score_test_folder.py` | Scores a folder of images against the local endpoint and reports predicted vs. actual. |
 | `requirements.txt` | Python dependencies. |
 | `car_parts_dataset/` | The generated dataset (images, splits, annotations, metadata). |
 
@@ -142,6 +143,18 @@ print(job.name)
 ```
 
 The job produces a `predictions.csv` with the predicted class and per-class probabilities for every image.
+
+### Get predictions from the local endpoint
+
+After deploying the local endpoint with `azureml/deploy_local_endpoint.py`, score a whole folder (for example the test split) and compare predictions against the known labels:
+
+```powershell
+python azureml/score_test_folder.py `
+    --subscription-id <sub-id> --resource-group <resource-group> --workspace <workspace> `
+    --images-dir car_parts_dataset/test
+```
+
+The subfolder name (`major_defect`, `minor_defect`, `no_defect`) is used as the ground-truth label, so the script prints predicted vs. actual per image, writes `test_predictions.csv`, and reports overall accuracy. Point `--images-dir` at any folder of new, unlabelled images to get defect-type predictions for them instead.
 
 ## API configuration
 
