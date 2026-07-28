@@ -120,7 +120,7 @@ Overall test accuracy is about 84%. The remaining errors sit almost entirely on 
 
 ## Deployment
 
-Two quota-free options are available.
+Two options are available.
 
 | Option | When to use |
 |--------|-------------|
