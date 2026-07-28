@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) Microsoft Corporation.
-# SPDX-License-Identifier: MIT
+
 """Score a folder of car-part images against a running LOCAL Azure ML endpoint.
 
 This is the "get predictions" step: point it at the test dataset (or any folder
