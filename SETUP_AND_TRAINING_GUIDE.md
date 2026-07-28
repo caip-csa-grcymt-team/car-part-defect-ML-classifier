@@ -9,8 +9,7 @@ This project trains a three-class image classifier that inspects car parts and l
 - `minor_defect` — one small, localized flaw (scratch, chip, small dent).
 - `major_defect` — widespread or severe damage.
 
-The current best model reaches about 84% accuracy on the held-out test set. It is essentially perfect on `major_defect` and mainly errs on the cautious side by flagging some clean parts as `minor_defect`.
-
+The current best model reaches about 84% accuracy on the held-out test set.
 ## Repository layout
 
 | Path | Purpose |
