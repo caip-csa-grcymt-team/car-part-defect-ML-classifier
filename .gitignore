@@ -19,9 +19,6 @@ predictions.csv
 # Agent tracking (local only)
 .copilot-tracking/
 
-# Generated dataset (large / regenerable via the generator script)
-car_parts_dataset/
-
 # OS
 .DS_Store
 Thumbs.db
