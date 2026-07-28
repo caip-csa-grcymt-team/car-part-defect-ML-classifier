@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) Microsoft Corporation.
-# SPDX-License-Identifier: MIT
+
 """Deploy the car-part defect classifier to a LOCAL Azure ML endpoint (Docker).
 
 A local endpoint runs the SAME scoring container as a managed online endpoint. 
