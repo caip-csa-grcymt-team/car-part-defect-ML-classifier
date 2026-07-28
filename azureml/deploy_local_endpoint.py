@@ -2,7 +2,7 @@
 
 """Deploy the car-part defect classifier to a LOCAL Azure ML endpoint (Docker).
 
-A local endpoint runs the SAME scoring container as a managed online endpoint. 
+A local endpoint runs the same scoring container as a managed online endpoint. 
 It gives you a real http://localhost scoring URL for testing.
 
 End-to-end SDK v2 flow (all with local=True):
