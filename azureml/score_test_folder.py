@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Score a folder of car-part images against a running LOCAL Azure ML endpoint.
+"""Score a folder of car-part images against a running LOCAL  endpoint.
 
 This is the "get predictions" step: point it at the test dataset (or any folder
 of images) and it asks the local endpoint for a defect-type prediction on each
