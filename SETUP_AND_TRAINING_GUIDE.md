@@ -125,7 +125,7 @@ Two options are available.
 
 | Option | When to use |
 |--------|-------------|
-| Batch endpoint (`azureml/deploy_batch_endpoint.py`) | Recommended for teams. Scores a whole folder of images in the shared Azure workspace with no local setup. |
+| Batch endpoint (`azureml/deploy_batch_endpoint.py`) | Scores a whole folder of images in the shared Azure workspace with no local setup. |
 | Local Docker endpoint (`azureml/deploy_local_endpoint.py`) | Offline, single-image predictions on your own machine. Requires Docker Desktop. |
 
 ### Score a folder with the batch endpoint
