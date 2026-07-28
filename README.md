@@ -165,7 +165,6 @@ API_CONFIG = {
 
 ## Common pitfalls
 
-- Do not commit API keys. Provide them through environment variables only.
 - Use pretrained backbones; training from scratch on this dataset size will not converge well.
 - Keep preprocessing identical across train, validation, and test.
 - Watch validation loss and keep the best checkpoint rather than the final epoch.
