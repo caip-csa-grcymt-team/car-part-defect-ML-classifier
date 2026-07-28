@@ -8,7 +8,7 @@ It gives you a real http://localhost scoring URL for testing.
 End-to-end SDK v2 flow (all with local=True):
     1. Connect to the workspace (used only for asset metadata)
     2. Create a local online endpoint
-    3. Create a local "blue" deployment from local model + score.py + conda env
+    3. Create a local deployment from local model + score.py + conda env
        (this builds a Docker image and starts the container)
     4. (Optional) Invoke the local endpoint with a test image
 
